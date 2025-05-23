@@ -1,4 +1,4 @@
-package com.example.Beans;
+package Beans;
 
 public class student {
     int id;

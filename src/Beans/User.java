@@ -1,10 +1,15 @@
-package com.example.Beans;
+package Beans;
 
 public class User {
     String username;
     String password;
     String usertype;
-    public User(String username, String password, String usertype) {}
+    public User(){}
+    public User(String username, String password, String usertype) {
+        this.username = username;
+        this.password = password;
+        this.usertype = usertype;
+    }
     public String getUsername() {
         return username;
     }
