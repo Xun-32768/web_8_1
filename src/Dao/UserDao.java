@@ -6,19 +6,28 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.*;
 public class UserDao {
-//    public void add(User user) throws Exception {
-//        boolean result = false;
-//        Connection conn = null;
-//        PreparedStatement ps= null;
-//        conn = JdbcUtil.getConnection();
-//        String sql="insert into users values(?,?,?)";
-//        ps = conn.prepareStatement(sql);
-//        ps.setString(1, user.getUsername());
-//        ps.setString(2, user.getPassword());
-//        ps.setString(3, user.getUsertype());
-//        ps.executeUpdate();
-//        JdbcUtil.free(null, ps, conn);
-//    }
+    public void register(User user) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps= null;
+        try {
+            conn = JdbcUtil.getConnection();
+            String sql = "insert into users values(?,?,?)";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getUsertype());
+            ps.executeUpdate();
+            System.out.println("注册请求：" + user.getUsername() +
+                    " / " + user.getPassword() + " / " + user.getUsertype());
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("该用户名已存在", e);
+        }finally{
+            JdbcUtil.free(null, ps, conn);
+
+        }
+    }
+
     public boolean login(User user) throws Exception {
         boolean result = false;
         Connection conn = null;

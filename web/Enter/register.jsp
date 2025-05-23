@@ -1,6 +1,8 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*" %>
+<%@ page import="Beans.User" %>
+<%@ page import="Dao.UserDao" %>
 <html>
 <head>
     <title>注册页面</title>
@@ -10,30 +12,22 @@
 <%
     String msg = "";
     if (request.getMethod().equalsIgnoreCase("POST")) {
-        String uname = request.getParameter("username");
-        String pwd = request.getParameter("password");
-        String utype = request.getParameter("usertype");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String usertype = request.getParameter("usertype");
 
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url="jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-            String user="root";
-            String password="060216";
-            Connection conn=DriverManager.getConnection(url,user,password);
-
-            String sql="INSERT INTO users(username, password, usertype) VALUES (?, ?, ?)";
-            PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(1, uname);
-            pst.setString(2, pwd);
-            pst.setString(3, utype);
-            pst.executeUpdate();
-
+            if(username.isEmpty() || password.isEmpty())
+            {
+                throw new Exception("用户名或密码不能为空");
+            }
+            User user = new User(username, password, usertype);
+            UserDao dao = new UserDao();
+            dao.register(user);
             msg = "注册成功，请返回登录页面。";
 
-            pst.close();
-            conn.close();
         } catch (Exception e) {
-            msg = "注册失败，该用户名已存在";
+            msg = "注册失败，"+e.getMessage();
         }
     }
 %>
