@@ -1,0 +1,31 @@
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../img/img1.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.place {
+    border: 1px solid black;
+    padding: 20px 30px 30px 30px;
+    width: 300px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+form h1{
+    text-align: center;
+}
+.form-label {
+    width: 80px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.button-container{
+    margin: 0 10px;
+    padding: 8px 16px;
+}
+
