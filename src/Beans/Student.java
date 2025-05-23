@@ -1,14 +1,22 @@
 package Beans;
 
-public class student {
+public class Student {
     int id;
     String name;
     String sex;
     int age;
     double weight;
     double height;
-    public student(){}
-
+    public Student(){}
+    public Student(int id ,String name,String sex,int age,double weight ,double height)
+    {
+        this.id = id;
+        this.name = name;
+        this.sex = sex;
+        this.age = age;
+        this.weight = weight;
+        this.height = height;
+    }
     public int getId() {
         return id;
     }

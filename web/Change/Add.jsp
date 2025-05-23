@@ -1,5 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*" %>
+<%@ page import="Beans.Student" %>
+<%@ page import="Dao.StudentDao" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
 <%
     String username = (String) session.getAttribute("username");
     String usertype = (String) session.getAttribute("usertype");
@@ -17,36 +21,21 @@
 <body>
 <%
     if (request.getMethod().equalsIgnoreCase("POST")) {
-        try {
-            int  id = Integer.parseInt(request.getParameter("id"));
-            String name = request.getParameter("name");
-            String sex = request.getParameter("sex");
-            int age = Integer.parseInt(request.getParameter("age"));
-            double weight = Double.parseDouble(request.getParameter("weight"));
-            double height = Double.parseDouble(request.getParameter("height"));
+        int  id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String sex = request.getParameter("sex");
+        int age = Integer.parseInt(request.getParameter("age"));
+        double weight = Double.parseDouble(request.getParameter("weight"));
+        double height = Double.parseDouble(request.getParameter("height"));
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url="jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-            String user="root";
-            String password="060216";
-            Connection conn= DriverManager.getConnection(url,user,password);
-
-            String sql="INSERT INTO student VALUES (?,?,?,?,?,?)";
-            PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setInt(1, id);
-            pst.setString(2, name);
-            pst.setString(3, sex);
-            pst.setInt(4, age);
-            pst.setDouble(5, weight);
-            pst.setDouble(6, height);
-            pst.executeUpdate();
+        try{
+            Student student=new Student(id,name,sex,age,weight,height);
+            StudentDao dao=new StudentDao();
+            dao.add(student);
 
             session.setAttribute("msg", "提交成功");
-
-            pst.close();
-            conn.close();
         } catch (Exception e) {
-            session.setAttribute("msg", "提交失败，该学生已存在或学号重复");
+            session.setAttribute("msg", "提交失败 "+e.getMessage());
         }
         response.sendRedirect("Add.jsp");
         return;
@@ -109,38 +98,24 @@
                 <th>身高</th>
             </tr>
             <%
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-                    String user = "root";
-                    String password = "060216";
-                    Connection conn = DriverManager.getConnection(url, user, password);
-                    String sql = "SELECT * FROM student";
-                    PreparedStatement pst=conn.prepareStatement(sql);
-                    ResultSet rs = pst.executeQuery();
+                try{
+                StudentDao dao=new StudentDao();
+                List<Student>students=dao.getAllStudent();
 
-                    while (rs.next()) {
-                        int id = rs.getInt("id");
-                        String name = rs.getString("name");
-                        String sex = rs.getString("sex");
-                        int age = rs.getInt("age");
-                        double weight = rs.getDouble("weight");
-                        double height = rs.getDouble("height");
+                for(Student s:students) {
             %>
             <tr>
-                <td><%= id %></td>
-                <td><%= name %></td>
-                <td><%= sex %></td>
-                <td><%= age %></td>
-                <td><%= weight %></td>
-                <td><%= height %></td>
+                <td><%= s.getId() %></td>
+                <td><%= s.getName() %></td>
+                <td><%= s.getSex() %></td>
+                <td><%= s.getAge() %></td>
+                <td><%= s.getWeight() %></td>
+                <td><%= s.getHeight() %></td>
             </tr>
             <%
-                    }
-                    rs.close();
-                    pst.close();
-                    conn.close();
-                } catch (Exception e) {
+                }
+
+                }catch (Exception e) {
                     out.println("<tr><td colspan='6'>数据加载失败</td></tr>");
                 }
             %>
