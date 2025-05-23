@@ -1,6 +1,8 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*" %>
+<%@ page import="Beans.User" %>
+<%@ page import="Dao.UserDao" %>
 <html>
 <head>
     <title>登录</title>
@@ -10,35 +12,22 @@
 <%
     String msg = "";
     if (request.getMethod().equalsIgnoreCase("POST")) {
-        String uname = request.getParameter("username");
-        String pwd = request.getParameter("password");
-        String utype = request.getParameter("usertype");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String usertype = request.getParameter("usertype");
 
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url="jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-            String user="root";
-            String password="060216";
-            Connection conn=DriverManager.getConnection(url,user,password);
-
-            String sql="SELECT * FROM users WHERE username=? AND password=? AND usertype=?";
-            PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(1, uname);
-            pst.setString(2, pwd);
-            pst.setString(3, utype);
-            ResultSet rs = pst.executeQuery();
-
-            if (rs.next()) {
-                session.setAttribute("username", uname);
-                session.setAttribute("password", pwd);
-                session.setAttribute("usertype", utype);
+            User user = new User(username, password, usertype);
+            UserDao dao = new UserDao();
+            if (dao.login(user)) {
+                session.setAttribute("username", username);
+                session.setAttribute("password", password);
+                session.setAttribute("usertype", usertype);
                 response.sendRedirect("../Change/welcome.jsp");
+                return;
             } else {
                 msg = "登录失败，用户名或密码或用户类型错误";
             }
-            rs.close();
-            pst.close();
-            conn.close();
         } catch (Exception e) {
             msg = "登录失败，服务器错误" ;
         }
