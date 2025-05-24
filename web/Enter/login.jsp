@@ -1,40 +1,13 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*" %>
-<%@ page import="Beans.User" %>
-<%@ page import="Dao.UserDao" %>
+
 <html>
 <head>
     <title>登录</title>
     <link rel="stylesheet" href="../CSS/enter.css">
 </head>
 <body>
-<%
-    String msg = "";
-    if (request.getMethod().equalsIgnoreCase("POST")) {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String usertype = request.getParameter("usertype");
-
-        try {
-            User user = new User(username, password, usertype);
-            UserDao dao = new UserDao();
-            if (dao.login(user)) {
-                session.setAttribute("username", username);
-                session.setAttribute("password", password);
-                session.setAttribute("usertype", usertype);
-                response.sendRedirect("../Change/welcome.jsp");
-                return;
-            } else {
-                msg = "登录失败，用户名或密码或用户类型错误";
-            }
-        } catch (Exception e) {
-            msg = "登录失败，服务器错误" ;
-        }
-    }
-%>
-
-<form class="place" method="post" action="login.jsp">
+<form class="place" method="post" action="../LoginServlet">
     <h1>登录</h1>
     <label class="form-label">用户名:</label>
     <input type="text" id="username" name="username">
@@ -57,7 +30,15 @@
         <a href="register.jsp">注册</a>
     </div>
 
+    <%
+        String msg = (String) session.getAttribute("msg");
+        if (msg != null) {
+    %>
     <p style="color: red;"><%= msg %></p>
+    <%
+            session.removeAttribute("msg");
+        }
+    %>
 </form>
 
 </body>

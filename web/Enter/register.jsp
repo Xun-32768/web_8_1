@@ -9,29 +9,7 @@
     <link rel="stylesheet" href="../CSS/enter.css">
 </head>
 <body>
-<%
-    String msg = "";
-    if (request.getMethod().equalsIgnoreCase("POST")) {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String usertype = request.getParameter("usertype");
-
-        try {
-            if(username.isEmpty() || password.isEmpty())
-            {
-                throw new Exception("用户名或密码不能为空");
-            }
-            User user = new User(username, password, usertype);
-            UserDao dao = new UserDao();
-            dao.register(user);
-            msg = "注册成功，请返回登录页面。";
-
-        } catch (Exception e) {
-            msg = "注册失败，"+e.getMessage();
-        }
-    }
-%>
-<form class="place" method="post" action="register.jsp">
+<form class="place" method="post" action="../RegisterServlet">
     <h1>注册</h1>
     <label class="form-label">用户名:</label>
     <input type="text" id="username" name="username" >
@@ -50,7 +28,15 @@
         <button type="reset">取消 </button>
         <a href="login.jsp">登录</a>
     </div>
+    <%
+       String msg = (String) session.getAttribute("msg");
+        if (msg != null) {
+    %>
     <p style="color: red;"><%= msg %></p>
+    <%
+            session.removeAttribute("msg");
+        }
+    %>
 
 </form>
 
