@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*" %>
+<%@ page import="Dao.UserDao" %>
+<%@ page import="Beans.User" %>
 <%
     String username = (String) session.getAttribute("username");
     String usertype = (String) session.getAttribute("usertype");
@@ -28,42 +30,23 @@
                 return;
             }
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url="jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-            String user="root";
-            String password="060216";
-            Connection conn= DriverManager.getConnection(url,user,password);
-
-            // 验证旧密码
-            String checkSql = "SELECT password FROM users WHERE username=? AND password=?";
-            PreparedStatement checkPst = conn.prepareStatement(checkSql);
-            checkPst.setString(1, username);
-            checkPst.setString(2, oldPassword);
-            ResultSet rs = checkPst.executeQuery();
-
-            if (!rs.next()) {
+            User Olduser=new User(username, oldPassword, usertype);
+            User Newuser=new User(username, newPassword, usertype);
+            UserDao dao=new UserDao();
+            boolean result1=dao.checkPassword(Olduser);
+            if(result1){
+                boolean result2=dao.updatePassword(Newuser);
+                if(result2){
+                    session.setAttribute("msg", "密码修改成功");
+                }
+                else{
+                    session.setAttribute("msg", "密码修改失败");
+                }
+            }
+            else{
                 session.setAttribute("msg", "原密码不正确");
-                rs.close();
-                checkPst.close();
-                conn.close();
-                response.sendRedirect("change_pwd.jsp");
-                return;
             }
 
-            rs.close();
-            checkPst.close();
-
-            // 更新密码
-            String updateSql = "UPDATE users SET password=? WHERE username=?";
-            PreparedStatement updatePst = conn.prepareStatement(updateSql);
-            updatePst.setString(1, newPassword);
-            updatePst.setString(2, username);
-            updatePst.executeUpdate();
-
-            session.setAttribute("msg", "密码修改成功");
-
-            updatePst.close();
-            conn.close();
         } catch (Exception e) {
             session.setAttribute("msg", "密码修改失败：" + e.getMessage());
         }

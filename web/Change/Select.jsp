@@ -2,6 +2,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="Beans.Student" %>
+<%@ page import="Dao.StudentDao" %>
 <%
     String username = (String) session.getAttribute("username");
     String usertype = (String) session.getAttribute("usertype");
@@ -19,11 +21,32 @@
 </head>
 <body>
 <%
-    String studentId = request.getParameter("studentId");
+    String studentIdStr = request.getParameter("studentId");
     String studentName = request.getParameter("studentName");
-    String weightMin = request.getParameter("weightMin");
-    String weightMax = request.getParameter("weightMax");
+    String weightMinStr = request.getParameter("weightMin");
+    String weightMaxStr = request.getParameter("weightMax");
     boolean isSearched = request.getMethod().equalsIgnoreCase("POST");
+    Integer studentId = null;
+    Double weightMin = null;
+    Double weightMax = null;
+    if (studentIdStr != null && !studentIdStr.trim().isEmpty()) {
+        studentId = Integer.parseInt(studentIdStr.trim());
+    }
+    if (weightMinStr != null && !weightMinStr.trim().isEmpty()) {
+        weightMin = Double.parseDouble(weightMinStr.trim());
+    }
+    if (weightMaxStr != null && !weightMaxStr.trim().isEmpty()) {
+        weightMax = Double.parseDouble(weightMaxStr.trim());
+    }
+    List<Student> students = null;
+    if (isSearched) {
+        try {
+            StudentDao dao = new StudentDao();
+            students = dao.findStudents(studentId, studentName, weightMin, weightMax);
+        } catch (Exception e) {
+            out.println("<p>查询失败：" + e.getMessage() + "</p>");
+        }
+    }
 %>
 
 <div class="container">
@@ -35,7 +58,7 @@
             <h1>学生信息查询</h1>
 
             <label class="form-label">学号</label>
-            <input type="text" name="studentId" value="<%= studentId != null ? studentId : "" %>">
+            <input type="text" name="studentId" value="<%= studentIdStr != null ? studentIdStr : "" %>">
             <br>
 
             <label class="form-label">姓名</label>
@@ -43,9 +66,8 @@
             <br>
 
             <label class="form-label">体重</label>
-            <input type="text" name="weightMin" value="<%= weightMin != null ? weightMin : "" %>">
-            -
-            <input type="text" name="weightMax" value="<%= weightMax != null ? weightMax : "" %>">
+            <input type="text" name="weightMin" value="<%= weightMinStr != null ? weightMinStr : "" %>">-
+            <input type="text" name="weightMax" value="<%= weightMaxStr != null ? weightMaxStr: "" %>">
             <br>
 
             <div class="button-container">
@@ -64,91 +86,27 @@
                 <th>身高</th>
             </tr>
             <%
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-                    String user = "root";
-                    String password = "060216";
-                    Connection conn = DriverManager.getConnection(url, user, password);
-
-                    StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM student WHERE 1=1");
-                    // 构建参数列表
-                    List<Object> params = new ArrayList<>();
-
-                    // 添加学号条件
-                    if (studentId != null && !studentId.isEmpty()) {
-                        sqlBuilder.append(" AND id = ?");
-                        params.add(Integer.parseInt(studentId));
-                    }
-
-                    // 添加姓名条件
-                    if (studentName != null && !studentName.isEmpty()) {
-                        sqlBuilder.append(" AND name LIKE ?");
-                        params.add("%" + studentName + "%");
-                    }
-
-                    // 添加体重最小值条件
-                    if (weightMin != null && !weightMin.isEmpty()) {
-                        sqlBuilder.append(" AND weight >= ?");
-                        params.add(Double.parseDouble(weightMin));
-                    }
-
-                    // 添加体重最大值条件
-                    if (weightMax != null && !weightMax.isEmpty()) {
-                        sqlBuilder.append(" AND weight <= ?");
-                        params.add(Double.parseDouble(weightMax));
-                    }
-
-                    PreparedStatement pst = conn.prepareStatement(sqlBuilder.toString());
-
-                    // 设置参数值
-                    for (int i = 0; i < params.size(); i++) {
-                        Object param = params.get(i);
-                        if (param instanceof Integer) {
-                            pst.setInt(i + 1, (Integer) param);
-                        }
-                        else if (param instanceof Double) {
-                            pst.setDouble(i + 1, (Double) param);
-                        }
-                        else {
-                            pst.setString(i + 1, (String) param);
-                        }
-                    }
-
-                    ResultSet rs = pst.executeQuery();
-                    boolean hasResults = false;
-
-                    while (rs.next()) {
-                        hasResults = true;
-                        int id = rs.getInt("id");
-                        String name = rs.getString("name");
-                        String sex = rs.getString("sex");
-                        int age = rs.getInt("age");
-                        double weight = rs.getDouble("weight");
-                        double height = rs.getDouble("height");
+                if (students != null && !students.isEmpty()) {
+                    for (Student s : students) {
             %>
             <tr>
-                <td><%= id %></td>
-                <td><%= name %></td>
-                <td><%= sex %></td>
-                <td><%= age %></td>
-                <td><%= weight %></td>
-                <td><%= height %></td>
+                <td><%= s.getId() %></td>
+                <td><%= s.getName() %></td>
+                <td><%= s.getSex() %></td>
+                <td><%= s.getAge() %></td>
+                <td><%= s.getWeight() %></td>
+                <td><%= s.getHeight() %></td>
             </tr>
             <%
-                    }
-
-                    if (!hasResults && isSearched) {
-                        out.println("<tr><td colspan='6'>无匹配的学生</td></tr>");
-                    } else if (!hasResults) {
-                        out.println("<tr><td colspan='6'>暂无学生数据</td></tr>");
-                    }
-
-                    rs.close();
-                    pst.close();
-                    conn.close();
-                } catch (Exception e) {
-                    out.println("<tr><td colspan='6'>查询失败</td></tr>");
+                }
+            } else if (isSearched) {
+            %>
+            <tr><td colspan="6">无匹配的学生</td></tr>
+            <%
+            } else {
+            %>
+            <tr><td colspan="6">暂无学生数据</td></tr>
+            <%
                 }
             %>
         </table>

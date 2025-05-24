@@ -53,4 +53,42 @@ public class UserDao {
     }
         return result;
     }
+
+    public boolean checkPassword(User user) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try{
+            conn = JdbcUtil.getConnection();
+            String sql = "SELECT * FROM users WHERE username=? AND password=?";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            rs = ps.executeQuery();
+            return rs.next();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new Exception("原密码错误 "+e);
+        }finally {
+            JdbcUtil.free(rs, ps, conn);
+        }
+    }
+    public boolean updatePassword(User user) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        int result = 0;
+        try {
+            conn = JdbcUtil.getConnection();
+            String sql = "UPDATE users SET password=? WHERE username=?";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, user.getPassword());
+            ps.setString(2, user.getUsername());
+            result = ps.executeUpdate();
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally {
+            JdbcUtil.free(null, ps, conn);
+        }
+        return result > 0;
+    }
 }

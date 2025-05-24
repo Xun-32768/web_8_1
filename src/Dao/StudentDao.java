@@ -55,6 +55,7 @@ public class StudentDao {
         }
         return result;
     }
+
     public Student getById(int id)throws Exception{
         Connection conn = null;
         PreparedStatement ps = null;
@@ -83,7 +84,24 @@ public class StudentDao {
         }
         return student;
     }
-
+    public boolean DeleteById(int id)throws Exception{
+        Connection conn = null;
+        PreparedStatement ps = null;
+        boolean result=false;
+        try{
+            conn= JdbcUtil.getConnection();
+            String sql = "DELETE FROM student WHERE id=?";
+            ps= conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int rows = ps.executeUpdate();
+            result=rows>0;
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            JdbcUtil.free(null,ps,conn);
+        }
+        return result;
+    }
     public List<Student> getAllStudent() throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -112,6 +130,64 @@ public class StudentDao {
         }
         return list;
     }
+    public List<Student> findStudents(Integer studentId, String studentName,
+                                      Double weightMin, Double weightMax) throws Exception {
+        List<Student> list = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+            conn = JdbcUtil.getConnection();
 
+            StringBuilder sql = new StringBuilder("SELECT * FROM student WHERE 1=1");
+            List<Object> params = new ArrayList<>();
+
+            if (studentId != null) {
+                sql.append(" AND id = ?");
+                params.add(studentId);
+            }
+            if (studentName != null && !studentName.isEmpty()) {
+                sql.append(" AND name LIKE ?");
+                params.add("%" + studentName + "%");
+            }
+            if (weightMin != null) {
+                sql.append(" AND weight >= ?");
+                params.add(weightMin);
+            }
+            if (weightMax != null) {
+                sql.append(" AND weight <= ?");
+                params.add(weightMax);
+            }
+
+            pst = conn.prepareStatement(sql.toString());
+
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof Integer) {
+                    pst.setInt(i + 1, (Integer) param);
+                } else if (param instanceof Double) {
+                    pst.setDouble(i + 1, (Double) param);
+                } else {
+                    pst.setString(i + 1, (String) param);
+                }
+            }
+
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                Student s = new Student();
+                s.setId(rs.getInt("id"));
+                s.setName(rs.getString("name"));
+                s.setSex(rs.getString("sex"));
+                s.setAge(rs.getInt("age"));
+                s.setWeight(rs.getDouble("weight"));
+                s.setHeight(rs.getDouble("height"));
+                list.add(s);
+            }
+
+        } finally {
+            JdbcUtil.free(rs, pst, conn);
+        }
+        return list;
+    }
 
 }

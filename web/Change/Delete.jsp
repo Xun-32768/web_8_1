@@ -1,5 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*" %>
+<%@ page import="Dao.StudentDao" %>
+<%@ page import="Beans.Student" %>
+<%@ page import="java.util.List" %>
 <%
     String username = (String) session.getAttribute("username");
     String usertype = (String) session.getAttribute("usertype");
@@ -22,26 +25,15 @@
     if (deleteId != null && !deleteId.isEmpty()) {
         try {
             int id = Integer.parseInt(deleteId);
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-            String user = "root";
-            String password = "060216";
-            Connection conn = DriverManager.getConnection(url, user, password);
+            StudentDao dao=new StudentDao();
+            boolean result=dao.DeleteById(id);
 
-            String sql = "DELETE FROM student WHERE id=?";
-            PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setInt(1, id);
-
-            int result = pst.executeUpdate();
-
-            if (result > 0) {
+            if (result) {
                 session.setAttribute("msg", "删除成功");
             } else {
                 session.setAttribute("msg", "删除失败，该学生不存在");
             }
 
-            pst.close();
-            conn.close();
         } catch (Exception e) {
             session.setAttribute("msg", "删除失败：" + e.getMessage());
         }
@@ -80,51 +72,31 @@
                 <th>操作</th>
             </tr>
             <%
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://localhost:3306/db02?&useSSL=false&serverTimezone=UTC";
-                    String user = "root";
-                    String password = "060216";
-                    Connection conn = DriverManager.getConnection(url, user, password);
-                    String sql = "SELECT * FROM student";
-                    PreparedStatement pst = conn.prepareStatement(sql);
-                    ResultSet rs = pst.executeQuery();
+                try{
+                    StudentDao dao=new StudentDao();
+                    List<Student> students=dao.getAllStudent();
 
-                    while (rs.next()) {
-                        int id = rs.getInt("id");
-                        String name = rs.getString("name");
-                        String sex = rs.getString("sex");
-                        int age = rs.getInt("age");
-                        double weight = rs.getDouble("weight");
-                        double height = rs.getDouble("height");
+                    for(Student s:students) {
             %>
             <tr>
-                <td><%= id %>
-                </td>
-                <td><%= name %>
-                </td>
-                <td><%= sex %>
-                </td>
-                <td><%= age %>
-                </td>
-                <td><%= weight %>
-                </td>
-                <td><%= height %>
-                </td>
-                <td>
-                    <a href="Delete.jsp?delete=<%= id %>" onclick="return confirm('确定要删除该学生信息吗？');">删除</a>
-                </td>
+                <td><%= s.getId() %></td>
+                <td><%= s.getName() %></td>
+                <td><%= s.getSex() %></td>
+                <td><%= s.getAge() %></td>
+                <td><%= s.getWeight() %></td>
+                <td><%= s.getHeight() %></td>
+                <td><a href="Delete.jsp?delete=<%= s.getId() %>"
+                       onclick="return confirm('确定要删除该学生信息吗？');">删除</a></td>
             </tr>
             <%
                     }
-                    rs.close();
-                    pst.close();
-                    conn.close();
-                } catch (Exception e) {
-                    out.println("<tr><td colspan='7'>数据加载失败</td></tr>");
+
+                }catch (Exception e) {
+                    out.println("<tr><td colspan='6'>数据加载失败</td></tr>");
                 }
             %>
         </table>
+
     </div>
 </div>
 
