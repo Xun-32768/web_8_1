@@ -1,46 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*" %>
 <%@ page import="Beans.Student" %>
 <%@ page import="Dao.StudentDao" %>
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
-<%
-    String username = (String) session.getAttribute("username");
-    String usertype = (String) session.getAttribute("usertype");
-    if (username == null || usertype == null) {
-        response.sendRedirect("Enter/login.jsp");
-        return;
-    }
-%>
+
 <html>
 <head>
     <title>数据添加</title>
-    <link rel="stylesheet" href="../CSS/change.css">
-    <script src="../JS/script.js"></script>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/change.css">
+    <script src="${pageContext.request.contextPath}/JS/script.js"></script>
 </head>
 <body>
-<%
-    if (request.getMethod().equalsIgnoreCase("POST")) {
-        int  id = Integer.parseInt(request.getParameter("id"));
-        String name = request.getParameter("name");
-        String sex = request.getParameter("sex");
-        int age = Integer.parseInt(request.getParameter("age"));
-        double weight = Double.parseDouble(request.getParameter("weight"));
-        double height = Double.parseDouble(request.getParameter("height"));
 
-        try{
-            Student student=new Student(id,name,sex,age,weight,height);
-            StudentDao dao=new StudentDao();
-            dao.add(student);
-
-            session.setAttribute("msg", "提交成功");
-        } catch (Exception e) {
-            session.setAttribute("msg", "提交失败 "+e.getMessage());
-        }
-        response.sendRedirect("Add.jsp");
-        return;
-    }
-%>
 
 <div class="container">
     <jsp:include page="menu.jsp">
@@ -48,7 +18,7 @@
     </jsp:include>
     <div class="content">
         <h1>学生信息添加</h1>
-        <form class="place" method="post" action="Add.jsp">
+        <form class="place" method="post" action="AddServlet">
 
             <label class="form-label">学号</label>
             <input type="text" name="id" >
@@ -99,10 +69,8 @@
             </tr>
             <%
                 try{
-                StudentDao dao=new StudentDao();
-                List<Student>students=dao.getAllStudent();
-
-                for(Student s:students) {
+                    List<Student> students = (List<Student>) request.getAttribute("students");
+                    for(Student s:students) {
             %>
             <tr>
                 <td><%= s.getId() %></td>
@@ -113,8 +81,7 @@
                 <td><%= s.getHeight() %></td>
             </tr>
             <%
-                }
-
+                        }
                 }catch (Exception e) {
                     out.println("<tr><td colspan='6'>数据加载失败</td></tr>");
                 }

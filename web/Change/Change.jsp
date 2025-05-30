@@ -1,71 +1,28 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*" %>
 <%@ page import="Beans.Student" %>
 <%@ page import="java.util.List" %>
 <%@ page import="Dao.StudentDao" %>
-<%
-    String username = (String) session.getAttribute("username");
-    String usertype = (String) session.getAttribute("usertype");
-    if (username == null || usertype == null) {
-        response.sendRedirect("Enter/login.jsp");
-        return;
-    }
-%>
+
 <html>
 <head>
     <title>数据修改</title>
-    <link rel="stylesheet" href="../CSS/change.css">
-    <script src="../JS/script.js"></script>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/change.css">
+    <script src="${pageContext.request.contextPath}/JS/script.js"></script>
 </head>
 <body>
-<%
-    if (request.getMethod().equalsIgnoreCase("POST")) {
-        try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            String name = request.getParameter("name");
-            String sex = request.getParameter("sex");
-            int age = Integer.parseInt(request.getParameter("age"));
-            double weight = Double.parseDouble(request.getParameter("weight"));
-            double height = Double.parseDouble(request.getParameter("height"));
 
-            Student student =new Student(id,name,sex,age,weight,height);
-            StudentDao dao = new StudentDao();
-            int result=dao.Change(student);
-            if (result > 0) {
-                session.setAttribute("msg", "修改成功");
-            } else {
-                session.setAttribute("msg", "修改失败，该学生不存在");
-            }
-        } catch (Exception e) {
-            session.setAttribute("msg", "修改失败");
-        }
-        response.sendRedirect("Change.jsp");
-        return;
-    }
-
-    // 查询要修改的学生信息
-    String idToEdit = request.getParameter("edit");
-    Student student =null;
-    if (idToEdit != null && !idToEdit.isEmpty()) {
-
-        try {
-            int id = Integer.parseInt(idToEdit);
-            StudentDao dao = new StudentDao();
-            student = dao.getById(id);
-        } catch (Exception e) {
-            session.setAttribute("msg", "获取学生信息失败");
-        }
-    }
-%>
 
 <div class="container">
     <jsp:include page="menu.jsp">
-        <jsp:param name="current" value="Change" />
+        <jsp:param name="current" value="Change"/>
     </jsp:include>
 
     <div class="content">
         <h1>学生信息修改</h1>
-        <form class="place" method="post" action="Change.jsp">
+        <form class="place" method="post" action="ChangeServlet">
+            <%
+                Student student = (Student) request.getAttribute("editStudent");
+            %>
             <label class="form-label">学号</label>
             <input type="text" name="id" value="<%= student != null ? student.getId() : "" %>" readonly>
             <br>
@@ -83,7 +40,7 @@
             <br>
 
             <label class="form-label">体重 </label>
-            <input type="text" name="weight"value="<%= student != null ? student.getWeight() : "" %>">
+            <input type="text" name="weight" value="<%= student != null ? student.getWeight() : "" %>">
             <br>
 
             <label class="form-label">身高 </label>
@@ -95,10 +52,11 @@
             </div>
         </form>
         <%
-            String msg = (String) session.getAttribute("msg");
+            String msg = (String) request.getAttribute("msg");
             if (msg != null) {
         %>
-        <p style="color: red;"><%= msg %></p>
+        <p style="color: red;"><%= msg %>
+        </p>
         <%
                 session.removeAttribute("msg");
             }
@@ -115,11 +73,9 @@
                 <th>操作</th>
             </tr>
             <%
-                try{
-                    StudentDao dao=new StudentDao();
-                    List<Student> students=dao.getAllStudent();
-
-                    for(Student s:students) {
+                List<Student> students = (List<Student>) request.getAttribute("students");
+                if (students != null) {
+                    for (Student s : students) {
             %>
             <tr>
                 <td><%= s.getId() %></td>
@@ -128,13 +84,16 @@
                 <td><%= s.getAge() %></td>
                 <td><%= s.getWeight() %></td>
                 <td><%= s.getHeight() %></td>
-                <td><a href="Change.jsp?edit=<%= s.getId() %>">修改</a></td>
+                <td><a href="ChangeServlet?edit=<%= s.getId() %>">修改</a></td>
             </tr>
             <%
-                    }
-
-                }catch (Exception e) {
-                    out.println("<tr><td colspan='6'>数据加载失败</td></tr>");
+                }
+            } else {
+            %>
+            <tr>
+                <td colspan='7'>暂无学生信息</td>
+            </tr>
+            <%
                 }
             %>
         </table>

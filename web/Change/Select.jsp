@@ -1,52 +1,22 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*" %>
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
 <%@ page import="Beans.Student" %>
-<%@ page import="Dao.StudentDao" %>
-<%
-    String username = (String) session.getAttribute("username");
-    String usertype = (String) session.getAttribute("usertype");
-    if (username == null || usertype == null) {
-        response.sendRedirect("Enter/login.jsp");
-        return;
-    }
-%>
 <html>
 <head>
     <title>数据查询</title>
-    <link rel="stylesheet" href="../CSS/change.css">
-    <script src="../JS/script.js"></script>
-
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/change.css">
+    <script src="${pageContext.request.contextPath}/JS/script.js"></script>
 </head>
 <body>
+
 <%
-    String studentIdStr = request.getParameter("studentId");
-    String studentName = request.getParameter("studentName");
-    String weightMinStr = request.getParameter("weightMin");
-    String weightMaxStr = request.getParameter("weightMax");
-    boolean isSearched = request.getMethod().equalsIgnoreCase("POST");
-    Integer studentId = null;
-    Double weightMin = null;
-    Double weightMax = null;
-    if (studentIdStr != null && !studentIdStr.trim().isEmpty()) {
-        studentId = Integer.parseInt(studentIdStr.trim());
-    }
-    if (weightMinStr != null && !weightMinStr.trim().isEmpty()) {
-        weightMin = Double.parseDouble(weightMinStr.trim());
-    }
-    if (weightMaxStr != null && !weightMaxStr.trim().isEmpty()) {
-        weightMax = Double.parseDouble(weightMaxStr.trim());
-    }
-    List<Student> students = null;
-    if (isSearched) {
-        try {
-            StudentDao dao = new StudentDao();
-            students = dao.findStudents(studentId, studentName, weightMin, weightMax);
-        } catch (Exception e) {
-            out.println("<p>查询失败：" + e.getMessage() + "</p>");
-        }
-    }
+    String studentIdStr = (String) request.getAttribute("studentId");
+    String studentName = (String) request.getAttribute("studentName");
+    String weightMinStr = (String) request.getAttribute("weightMin");
+    String weightMaxStr = (String) request.getAttribute("weightMax");
+    List<Student> students = (List<Student>) request.getAttribute("students");
+    boolean isSearched = request.getAttribute("searched") != null;
+    String msg = (String) request.getAttribute("msg");
 %>
 
 <div class="container">
@@ -54,7 +24,7 @@
         <jsp:param name="current" value="Select" />
     </jsp:include>
     <div class="content">
-        <form class="place" method="post" action="Select.jsp">
+        <form class="place" method="post" action="SelectServlet">
             <h1>学生信息查询</h1>
 
             <label class="form-label">学号</label>
